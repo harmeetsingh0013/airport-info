@@ -2,7 +2,7 @@ package repo.impl
 
 import javax.inject.{Inject, Singleton}
 
-import dtos.AirportRunways
+import dtos.{AirportRunways, CountryAirports, Runways}
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.db.Database
 import repo.AirportRepo
@@ -18,15 +18,16 @@ class AirportRepoImpl @Inject() (db: Database) (implicit ec: DatabaseExecutionCo
   val logger: Logger = LoggerFactory.getLogger(this.getClass())
 
   override def findAirportRunwaysByCountryNameOrCode(name: Option[String], code: Option[String],
-                                                     offset: Int, limit: Int): Future[Vector[AirportRunways]] =
-    Future {
+                                                     offset: Int, limit: Int): Future[Vector[AirportRunways]] = Future {
+      logger.info("In findAirportRunwaysByCountryNameOrCode repository method")
+
       db.withConnection { conn =>
         val sql =
           """
             |select cnt.code, cnt.name, ap.ident, ap.name, ap.type,
             |rw.length_ft, rw.width_ft, rw.surface
             |FROM countries cnt
-            |INNER JOIN airports ap on cnt.continent = ap.continent
+            |INNER JOIN airports ap on cnt.code = ap.iso_country
             |INNER JOIN runways rw ON rw.airport_ident = ap.ident
             |WHERE cnt.name LIKE ? AND cnt.code LIKE ?
             |ORDER BY ap.ident LIMIT ?, ?
@@ -40,18 +41,110 @@ class AirportRepoImpl @Inject() (db: Database) (implicit ec: DatabaseExecutionCo
 
         val rs = stmt.executeQuery()
 
-        rs.toStream.map { rs =>
+        rs.toStream.map { row =>
           AirportRunways(
-            countryCode = rs.getString("cnt.code"),
-            countryName = rs.getString("cnt.name"),
-            airportIdent = rs.getString("ap.ident"),
-            airportName = rs.getString("ap.name"),
-            airportType = rs.getString("ap.type"),
-            runwayLengthFt = rs.getIntOption("rw.length_ft"),
-            runwayWidthFt = rs.getIntOption("rw.width_ft"),
-            runwaySurface = rs.getStringOption("rw.surface")
+            countryCode = row.getString("cnt.code"),
+            countryName = row.getString("cnt.name"),
+            airportIdent = row.getStringOption("ap.ident"),
+            airportName = row.getStringOption("ap.name"),
+            airportType = row.getStringOption("ap.type"),
+            runwayLengthFt = row.getIntOption("rw.length_ft"),
+            runwayWidthFt = row.getIntOption("rw.width_ft"),
+            runwaySurface = row.getStringOption("rw.surface")
           )
         }.toVector
       }
+  }
+
+  override def countriesWithHighestNumberOfAirport(limit: Int, order: String): Future[Vector[CountryAirports]] = Future {
+    logger.info("In countriesWithHighestNumberOfAirport repository method")
+
+    db.withConnection { conn =>
+      val sql =
+        s"""
+          |	select cnt.code, cnt.name, COUNT(ap.ident) airports_count
+          |	FROM countries cnt
+          |	INNER JOIN airports ap on cnt.code = ap.iso_country
+          |	GROUP BY cnt.code, cnt.name
+          |	ORDER BY airports_count ${order} LIMIT ?
+        """.stripMargin
+
+      val stmt = conn.prepareStatement(sql)
+      stmt.setInt(1, limit)
+
+      val rs = stmt.executeQuery()
+      rs.toStream.map { row =>
+        CountryAirports(
+          countryCode = row.getString("cnt.code"),
+          countryName = row.getString("cnt.name"),
+          airportCount = row.getInt("airports_count")
+        )
+      }.toVector
+    }
+  }
+
+  override def countriesRunway(countriesLimit: Int): Future[Vector[AirportRunways]] = Future {
+    logger.info("In countriesRunway repository method")
+
+    db.withConnection { conn =>
+
+      val countriesSql =
+        """
+          |SELECT code FROM airport_info.countries
+          |ORDER BY code limit ?;
+        """.stripMargin
+      val countriesStmt = conn.prepareStatement(countriesSql)
+      countriesStmt.setInt(1, countriesLimit)
+
+      val countriesRs = countriesStmt.executeQuery()
+      val countriesCode = countriesRs.toStream.map(_.getString("code")).toList
+
+      val runwaysSql =
+        s"""
+          |select DISTINCT (rw.surface), cnt.code, cnt.name
+          |FROM countries cnt
+          |INNER JOIN airports ap on cnt.code = ap.iso_country
+          |INNER JOIN runways rw ON rw.airport_ident = ap.ident
+          |WHERE rw.surface <> '' AND cnt.code IN ('${countriesCode.mkString("', '")}')
+          |ORDER BY cnt.code
+        """.stripMargin
+
+      println(runwaysSql)
+      val runwayStmt = conn.prepareStatement(runwaysSql)
+      val runwayRs = runwayStmt.executeQuery()
+      runwayRs.toStream.map { row =>
+        AirportRunways(
+          countryCode = row.getString("cnt.code"),
+          countryName = row.getString("cnt.name"),
+          runwaySurface = row.getStringOption("rw.surface")
+        )
+      }.toVector
+    }
+  }
+
+  override def runwaysCommonIdentifications(offset: Int, limit: Int): Future[Vector[Runways]] = Future {
+    logger.info("In runwaysCommonIdentifications repository method")
+
+    db.withConnection { conn =>
+      val sql =
+        """
+          |SELECT surface, le_ident, COUNT(le_ident) as count FROM airport_info.runways
+          |WHERE surface <> ''
+          |GROUP BY surface ,le_ident
+          |ORDER BY count DESC LIMIT ?, ?
+        """.stripMargin
+
+      val stmt = conn.prepareStatement(sql)
+      stmt.setInt(1, offset)
+      stmt.setInt(2, limit)
+
+      stmt.executeQuery().toStream.map { row =>
+        Runways(
+          surface = row.getString("surface"),
+          leIdent = row.getString("le_ident"),
+          count = row.getInt("count")
+        )
+      }.toVector
+    }
   }
 }

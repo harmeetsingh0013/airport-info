@@ -5,7 +5,7 @@ LOAD DATA INFILE '/var/lib/mysql-files/countries.csv' INTO TABLE countries FIELD
 OPTIONALLY ENCLOSED BY '"'  IGNORE 1 LINES;
 
 LOAD DATA INFILE '/var/lib/mysql-files/airports.csv' INTO TABLE airports FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'  IGNORE 1 LINES
-(id, ident, type, name, latitude_deg, longitude_deg, @elevation_ft, continent, continent, iso_region, municipality, scheduled_service, gps_code, iata_code, local_code, home_link, wikipedia_link, keywords)
+(id, ident, type, name, latitude_deg, longitude_deg, @elevation_ft, continent, iso_country, iso_region, municipality, scheduled_service, gps_code, iata_code, local_code, home_link, wikipedia_link, keywords)
 SET elevation_ft = nullif(@elevation_ft, '');
 
 LOAD DATA INFILE '/var/lib/mysql-files/runways.csv' INTO TABLE runways FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"' IGNORE 1 LINES
