@@ -35,7 +35,7 @@ class AirportRepoImpl @Inject() (db: Database) (implicit ec: DatabaseExecutionCo
 
         val stmt = conn.prepareStatement(sql)
         stmt.setString(1, name.map(_ + "%").getOrElse("%"))
-        stmt.setString(2, code.map(_ + "%").getOrElse("%"))
+        stmt.setString(2, code.getOrElse("%"))
         stmt.setInt(3, offset)
         stmt.setInt(4, limit)
 
@@ -62,7 +62,7 @@ class AirportRepoImpl @Inject() (db: Database) (implicit ec: DatabaseExecutionCo
     db.withConnection { conn =>
       val sql =
         s"""
-          |	select cnt.code, cnt.name, COUNT(ap.ident) airports_count
+          |	SELECT cnt.code AS code, cnt.name AS name, COUNT(ap.ident) airports_count
           |	FROM countries cnt
           |	INNER JOIN airports ap on cnt.code = ap.iso_country
           |	GROUP BY cnt.code, cnt.name
@@ -75,8 +75,8 @@ class AirportRepoImpl @Inject() (db: Database) (implicit ec: DatabaseExecutionCo
       val rs = stmt.executeQuery()
       rs.toStream.map { row =>
         CountryAirports(
-          countryCode = row.getString("cnt.code"),
-          countryName = row.getString("cnt.name"),
+          countryCode = row.getString("code"),
+          countryName = row.getString("name"),
           airportCount = row.getInt("airports_count")
         )
       }.toVector

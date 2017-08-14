@@ -1,7 +1,7 @@
 # --- !Ups
 
-INSERT INTO countries VALUES('302556', 'AO', 'Angola', 'AF', 'http://en.wikipedia.org/wiki/Angola', NULL);
-INSERT INTO countries VALUES('302557', 'BF', 'Burkina Faso', 'AF', 'http://en.wikipedia.org/wiki/Burkina_Faso', NULL);
+INSERT INTO countries VALUES(302556, 'AO', 'Angola', 'AF', 'http://en.wikipedia.org/wiki/Angola', NULL);
+INSERT INTO countries VALUES(302557, 'BF', 'Burkina Faso', 'AF', 'http://en.wikipedia.org/wiki/Burkina_Faso', NULL);
 
 INSERT INTO airports VALUES (9, 'FN18', 'small_airport', 'Matala Airport', -14.727499961853027, 15.013999938964844, 4120, 'AF', 'AO', 'AO-HUI', 'Matala', 'no', 'FN18', NULL, 'FN18', NULL, NULL, NULL);
 INSERT INTO airports VALUES (10, 'FN19', 'small_airport', 'Cabo Ledo Airport', -9.653050422668457, 13.260600090026855, 360, 'AF', 'AO', 'AO-BGO', 'Cabo Ledo', 'no', 'FN19', NULL, 'FN19', NULL, NULL, NULL);
