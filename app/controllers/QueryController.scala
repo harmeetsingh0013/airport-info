@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 
 import com.typesafe.config.ConfigFactory
 import play.api.Logger
-import play.api.mvc.{AbstractController, ControllerComponents}
+import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 import repo.AirportRepo
 import utils.Utility.createJsonResponse
 
@@ -15,9 +15,9 @@ import scala.util.Try
 class QueryController @Inject()(airportRepo: AirportRepo, cc: ControllerComponents)
                                (implicit ec: ExecutionContext) extends AbstractController(cc) {
 
-  private val LIMIT = Try(ConfigFactory.load().getInt("page.limit")).toOption.getOrElse(10);
+  private val LIMIT: Int = Try(ConfigFactory.load().getInt("page.limit")).toOption.getOrElse(10);
 
-  def findCountryAirportRunways(name: Option[String], code: Option[String], page: Int) = Action.async {
+  def findCountryAirportRunways(name: Option[String], code: Option[String], page: Int): Action[AnyContent] = Action.async {
     Logger.info("findCountryAirportRunways action performed")
 
     if(name.isEmpty && code.isEmpty) {

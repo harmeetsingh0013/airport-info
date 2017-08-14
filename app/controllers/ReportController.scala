@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import com.typesafe.config.ConfigFactory
 import play.api.Logger
-import play.api.mvc.{AbstractController, ControllerComponents}
+import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 import repo.AirportRepo
 import utils.Utility.createJsonResponse
 
@@ -16,10 +16,10 @@ class ReportController @Inject()(airportRepo: AirportRepo, cc: ControllerCompone
 
   private val LIMIT = Try(ConfigFactory.load().getInt("page.limit")).toOption.getOrElse(10);
 
-  def countriesNumberOfAirports(severity: String) = Action.async {
+  def countriesNumberOfAirports(severity: String): Action[AnyContent] = Action.async {
     Logger.info("countriesNumberOfAirports action performed")
 
-    val order = if(severity.trim.equalsIgnoreCase("high")) "DESC" else "ASC"
+    val order = if (severity.trim.equalsIgnoreCase("high")) "DESC" else "ASC"
     airportRepo.countriesWithHighestNumberOfAirport(LIMIT, order).map { result =>
       Ok(createJsonResponse(data = result))
     }.recover {
@@ -29,7 +29,7 @@ class ReportController @Inject()(airportRepo: AirportRepo, cc: ControllerCompone
     }
   }
 
-  def countriesRunways(countriesLimit: Int) = Action.async {
+  def countriesRunways(countriesLimit: Int): Action[AnyContent] = Action.async {
     Logger.info("countriesRunways action performed")
 
     airportRepo.countriesRunway(countriesLimit).map { result =>
@@ -41,7 +41,7 @@ class ReportController @Inject()(airportRepo: AirportRepo, cc: ControllerCompone
     }
   }
 
-  def runwayCommonIdentification(page: Int) = Action.async {
+  def runwayCommonIdentification(page: Int): Action[AnyContent] = Action.async {
     Logger.info("runwayCommonIdentification action performed")
 
     val offset = (page - 1) * LIMIT
