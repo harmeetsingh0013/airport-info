@@ -28,6 +28,6 @@ libraryDependencies ++= Seq(
 
 parallelExecution in Test := false
 
-coverageMinimum := 90
+//coverageMinimum := 90
 
-coverageFailOnMinimum := true
+//coverageFailOnMinimum := true

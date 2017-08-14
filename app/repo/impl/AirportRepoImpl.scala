@@ -90,7 +90,7 @@ class AirportRepoImpl @Inject() (db: Database) (implicit ec: DatabaseExecutionCo
 
       val countriesSql =
         """
-          |SELECT code FROM airport_info.countries
+          |SELECT code FROM countries
           |ORDER BY code limit ?;
         """.stripMargin
       val countriesStmt = conn.prepareStatement(countriesSql)
@@ -101,7 +101,7 @@ class AirportRepoImpl @Inject() (db: Database) (implicit ec: DatabaseExecutionCo
 
       val runwaysSql =
         s"""
-          |select DISTINCT (rw.surface), cnt.code, cnt.name
+          |SELECT DISTINCT (rw.surface) AS surface, cnt.code AS code, cnt.name AS name
           |FROM countries cnt
           |INNER JOIN airports ap on cnt.code = ap.iso_country
           |INNER JOIN runways rw ON rw.airport_ident = ap.ident
@@ -109,14 +109,13 @@ class AirportRepoImpl @Inject() (db: Database) (implicit ec: DatabaseExecutionCo
           |ORDER BY cnt.code
         """.stripMargin
 
-      println(runwaysSql)
       val runwayStmt = conn.prepareStatement(runwaysSql)
       val runwayRs = runwayStmt.executeQuery()
       runwayRs.toStream.map { row =>
         AirportRunways(
-          countryCode = row.getString("cnt.code"),
-          countryName = row.getString("cnt.name"),
-          runwaySurface = row.getStringOption("rw.surface")
+          countryCode = row.getString("code"),
+          countryName = row.getString("name"),
+          runwaySurface = row.getStringOption("surface")
         )
       }.toVector
     }
@@ -128,7 +127,7 @@ class AirportRepoImpl @Inject() (db: Database) (implicit ec: DatabaseExecutionCo
     db.withConnection { conn =>
       val sql =
         """
-          |SELECT surface, le_ident, COUNT(le_ident) as count FROM airport_info.runways
+          |SELECT surface, le_ident, COUNT(le_ident) as count FROM runways
           |WHERE surface <> ''
           |GROUP BY surface ,le_ident
           |ORDER BY count DESC LIMIT ?, ?

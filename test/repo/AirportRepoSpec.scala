@@ -1,7 +1,7 @@
 package repo
 
 import akka.actor.ActorSystem
-import dtos.{AirportRunways, CountryAirports}
+import dtos.{AirportRunways, CountryAirports, Runways}
 import org.scalatest.{AsyncFlatSpec, AsyncWordSpec, BeforeAndAfterAll, Matchers}
 import org.scalatestplus.play.PlaySpec
 import play.api.db.evolutions.Evolutions
@@ -63,6 +63,30 @@ class AirportRepoSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll
         result should contain theSameElementsAs Vector(
           CountryAirports("AO", "Angola", 3),
           CountryAirports("BF", "Burkina Faso", 2)
+        )
+      }
+    }
+
+    "fetch countries runways" in {
+      repo.countriesRunway(5).map { result =>
+        result should contain theSameElementsAs Vector (
+          AirportRunways(countryCode = "AO", countryName = "Angola", runwaySurface = Some("ASP")),
+          AirportRunways(countryCode = "BF", countryName = "Burkina Faso", runwaySurface = Some("LAT")),
+          AirportRunways(countryCode = "BF", countryName = "Burkina Faso", runwaySurface = Some("ASP"))
+        )
+      }
+    }
+
+    "fetch runway common identification" in {
+      repo.runwaysCommonIdentifications(0, 10).map { result =>
+        result should contain theSameElementsAs Vector (
+          Runways("ASP", "10", 1),
+          Runways("ASP", "08", 1),
+          Runways("ASP", "16", 1),
+          Runways("ASP", "04L", 1),
+          Runways("ASP", "06", 1),
+          Runways("ASP", "07", 1),
+          Runways("LAT", "04R", 1)
         )
       }
     }
