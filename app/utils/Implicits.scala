@@ -19,17 +19,8 @@ object Implicits {
       Option(resultSet.getString(columnLabel))
     }
 
-    def getStringOption(columnIndex: Int): Option[String] = {
-      Option(resultSet.getString(columnIndex))
-    }
-
     def getIntOption(columnLabel: String): Option[Int] = {
       Option(resultSet.getInt(columnLabel))
     }
-
-    def getIntOption(columnIndex: Int): Option[Int] = {
-      Option(resultSet.getInt(columnIndex))
-    }
   }
-
 }

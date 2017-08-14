@@ -17,7 +17,8 @@ libraryDependencies ++= Seq(
   "com.h2database" % "h2" % "1.4.196" % "test",
   "org.scalactic" %% "scalactic" % "3.0.1",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-  "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.0" % Test
+  "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.0" % Test,
+  "org.mockito" % "mockito-all" % "1.10.19" % "test"
 )
 
 // Adds additional packages into Twirl
@@ -28,6 +29,8 @@ libraryDependencies ++= Seq(
 
 parallelExecution in Test := false
 
-//coverageMinimum := 90
+coverageMinimum := 90
 
-//coverageFailOnMinimum := true
+coverageFailOnMinimum := true
+
+coverageExcludedPackages := "<empty>;Reverse.*;router\\.*"
