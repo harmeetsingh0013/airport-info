@@ -37,7 +37,7 @@ class AirportRepoSpec extends AsyncWordSpec with Matchers with BeforeAndAfterAll
   "AirportRepo" should {
     "fetch the details for airport runways by country code or name" in {
       repo.findAirportRunwaysByCountryNameOrCode(None, None, 0, 10).map { result =>
-        result.size should ===(0)
+        result.size should ===(6)
       }
     }
   }

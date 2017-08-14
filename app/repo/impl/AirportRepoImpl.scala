@@ -24,12 +24,12 @@ class AirportRepoImpl @Inject() (db: Database) (implicit ec: DatabaseExecutionCo
       db.withConnection { conn =>
         val sql =
           """
-            |select cnt.code, cnt.name, ap.ident, ap.name, ap.type,
-            |rw.length_ft, rw.width_ft, rw.surface
+            |SELECT cnt.code AS code, cnt.name AS name, ap.ident AS ident, ap.name AS airport_name,
+            |ap.type AS airport_type, rw.length_ft AS runway_length, rw.width_ft AS runway_width, rw.surface AS runway_surface
             |FROM countries cnt
-            |INNER JOIN airports ap on cnt.code = ap.iso_country
+            |INNER JOIN airports ap on code = ap.iso_country
             |INNER JOIN runways rw ON rw.airport_ident = ap.ident
-            |WHERE cnt.name LIKE ? AND cnt.code LIKE ?
+            |WHERE cnt.name LIKE ? AND code LIKE ?
             |ORDER BY ap.ident LIMIT ?, ?
           """.stripMargin
 
@@ -43,14 +43,14 @@ class AirportRepoImpl @Inject() (db: Database) (implicit ec: DatabaseExecutionCo
 
         rs.toStream.map { row =>
           AirportRunways(
-            countryCode = row.getString("cnt.code"),
-            countryName = row.getString("cnt.name"),
-            airportIdent = row.getStringOption("ap.ident"),
-            airportName = row.getStringOption("ap.name"),
-            airportType = row.getStringOption("ap.type"),
-            runwayLengthFt = row.getIntOption("rw.length_ft"),
-            runwayWidthFt = row.getIntOption("rw.width_ft"),
-            runwaySurface = row.getStringOption("rw.surface")
+            countryCode = row.getString("code"),
+            countryName = row.getString("name"),
+            airportIdent = row.getStringOption("ident"),
+            airportName = row.getStringOption("airport_name"),
+            airportType = row.getStringOption("airport_type"),
+            runwayLengthFt = row.getIntOption("runway_length"),
+            runwayWidthFt = row.getIntOption("runway_width"),
+            runwaySurface = row.getStringOption("runway_surface")
           )
         }.toVector
       }

@@ -27,3 +27,7 @@ libraryDependencies ++= Seq(
 // play.sbt.routes.RoutesKeys.routesImport += "com.harmeet.binders._"
 
 parallelExecution in Test := false
+
+coverageMinimum := 90
+
+coverageFailOnMinimum := true
